@@ -3,7 +3,6 @@ from scripts.deploy_lottery import deploy_lottery
 from scripts.helpful_scripts import (
     LOCAL_BLOCKCHAIN_ENVIRONMENTS,
     get_account,
-    get_contract,
     fund_with_link,
 )
 import pytest
@@ -15,11 +14,13 @@ def test_can_pick_winner():
         pytest.skip()
     lottery = deploy_lottery()
     account = get_account()
-    lottery.enter({"from": account, "value": lottery.getEntranceFee() + 10000})
-    lottery.enter({"from": account, "value": lottery.getEntranceFee() + 10000})
+    lottery.enter({"from": account, "value": lottery.getEntranceFee() + 100000000})
+    lottery.enter({"from": account, "value": lottery.getEntranceFee() + 100000000})
     fund_with_link({"from": account})
-    lottery.endLottery({"from": account})
+    LINK = 2000000000000000000
+    lottery.endLottery(LINK, {"from": account})
     time.sleep(60)
+    lottery.withdraw(LINK, account, {"from": account})
     assert lottery.recentWinner() == account
     assert lottery.balance() == 0
 

@@ -1,5 +1,10 @@
-from scripts.helpful_scripts import get_account, get_contract, fund_with_link
-from brownie import Lottery, network, config, accounts
+from scripts.helpful_scripts import (
+    get_account,
+    get_contract,
+    fund_with_link,
+    FORKED_LOCAL_ENVIRONMENTS,
+)
+from brownie import Lottery, network, config
 import time
 
 
@@ -38,26 +43,30 @@ def enter_lottery():
     print("You entered the lottery")
 
 
-def end_lottery():
+def end_lottery(LINK):
     account = get_account()
     lottery = Lottery[-1]
-    LINK = 5000000000000000000
+
     tx = fund_with_link(
         lottery.address,
         amount=LINK,
     )
     tx.wait(1)
-    print("LINK added to subscription: ", round(LINK / 100000000000000000, 2))
+    print("LINK added to subscription: ", round(LINK / 1000000000000000000, 2))
     ending_transaction = lottery.endLottery({"from": account})
     ending_transaction.wait(1)
     # for waiting response of the VRF
     time.sleep(60)
     print(f"{lottery.recentWinner()} is the winner!")
+    print(f"{lottery.randomCheck()} is the VRF number")
 
 
-def cancel_sub():
+def cancel_sub(LINK):
     account = get_account()
     lottery = Lottery[-1]
+    print("Withdrawing....")
+    tx = lottery.withdraw(LINK, account, {"from": account})
+    tx.wait(1)
     print("Deleting subscription...")
     tx = lottery.cancelSubscription(account, {"from": account})
     tx.wait(1)
@@ -65,8 +74,15 @@ def cancel_sub():
 
 
 def main():
+    LINK = 2000000000000000000
     deploy_lottery()
     start_lottery()
     enter_lottery()
-    end_lottery()
-    cancel_sub()
+    try:
+        end_lottery(LINK)
+    except:
+        print(
+            "end of lottery could not be fulfilled, proccedding to cancel subcription"
+        )
+    if network.show_active() not in FORKED_LOCAL_ENVIRONMENTS:
+        cancel_sub(LINK)
