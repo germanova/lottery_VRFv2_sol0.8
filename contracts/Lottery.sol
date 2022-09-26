@@ -56,6 +56,7 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
 
     address payable[] public players; // address of lottery participants
     address payable public recentWinner; // address of winner
+    uint256 public randomCheck;
     uint256 public usdEntryFee; // minimum entry of lottery
     AggregatorV3Interface internal EthUsdPriceFeed; // EthUsd API interface
 
@@ -100,7 +101,7 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
 
     // For this example, retrieve 1 random values in one request.
     // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
-    uint32 numWords = 1;
+    uint32 numWords = 2;
 
     uint256[] public s_randomWords;
     uint256 public s_requestId;
@@ -243,6 +244,7 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
         // a%b divides a by b and returns the remainder
         // Example: 7 players, random number 22. So 22 % 7 = 1,
         uint256 indexofWinner = randomWords[0] % players.length;
+        randomCheck = randomWords[0];
         recentWinner = players[indexofWinner];
         recentWinner.transfer(address(this).balance);
         // Reset
