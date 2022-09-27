@@ -5,7 +5,6 @@ from scripts.helpful_scripts import (
     LOCAL_BLOCKCHAIN_ENVIRONMENTS,
     get_account,
     get_contract,
-    fund_with_link,
 )
 import pytest
 
@@ -66,7 +65,7 @@ def test_can_end_lottery():
     account = get_account()
     lottery.startLottery({"from": account})
     lottery.enter({"from": account, "value": lottery.getEntranceFee()})
-    fund_with_link(lottery)
+    # fund_with_link(lottery)
     # Act
     lottery.endLottery({"from": account})
     # Assert
@@ -88,7 +87,7 @@ def test_can_pick_winner_correctly():
     # 1000000000000000000 = 1 LINK
     subscription_id = transaction.events["subscriptionCreation"]["subscriptionId"]
     get_contract("vrf_coordinator").fundSubscription(
-        subscription_id, 5000000000000000000, {"from": account}
+        subscription_id, 10000000000000000000, {"from": account}
     )
 
     starting_balance_of_account = account.balance()
@@ -96,7 +95,7 @@ def test_can_pick_winner_correctly():
 
     transaction = lottery.endLottery({"from": account})
     request_id = transaction.events["requestRandomWords"]["requestId"]
-    STATIC_RNG = [777]
+    STATIC_RNG = [777, 888]
     random_request = get_contract("vrf_coordinator").fulfillRandomWordsWithOverride(
         request_id, lottery.address, STATIC_RNG, {"from": account}
     )

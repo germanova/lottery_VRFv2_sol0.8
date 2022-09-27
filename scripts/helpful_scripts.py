@@ -87,22 +87,3 @@ def deploy_mocks(
     LinkToken.deploy({"from": account})
     VRFCoordinatorV2Mock.deploy(base_fee, gas_price_link, {"from": account})
     print("Mock Deployed")
-
-
-# 1000000000000000000 = 1 LINK
-def fund_with_link(
-    contract_address, account=None, link_token=None, amount=2500000000000000000
-):  # 2.5 LINK
-    account = account if account else get_account()
-    link_token = link_token if link_token else get_contract("link_token_contract")
-    if network.show_active() in FORKED_LOCAL_ENVIRONMENTS:
-        tx = link_token.transfer(account, amount, {"from": accounts[10]})
-        tx.wait(1)
-        print("LINK send to account from: ", accounts[10])
-        tx = link_token.transfer(contract_address, amount * 0.98, {"from": account})
-        tx.wait(1)
-    else:
-        tx = link_token.transfer(contract_address, amount, {"from": account})
-        tx.wait(1)
-    print("Contract Funded")
-    return tx

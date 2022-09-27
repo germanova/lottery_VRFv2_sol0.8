@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // A mock for testing code that relies on VRFCoordinatorV2.
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 // import "smartcontractkit/chainlink-brownie-contracts/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import "contracts/smartcontractkit/chainlink-brownie-contracts/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
