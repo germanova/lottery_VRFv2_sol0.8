@@ -1,10 +1,10 @@
 from scripts.helpful_scripts import (
     get_account,
     get_contract,
-    fund_with_link,
     FORKED_LOCAL_ENVIRONMENTS,
+    LOCAL_BLOCKCHAIN_ENVIRONMENTS,
 )
-from brownie import Lottery, network, config
+from brownie import Lottery, network, config, accounts
 import time
 
 
@@ -40,19 +40,33 @@ def enter_lottery():
     value = lottery.getEntranceFee() + 100000000  # 100000000 to prevent possible errors
     tx = lottery.enter({"from": account, "value": value})
     tx.wait(1)
-    print("You entered the lottery")
+    print("You entered the lottery for ", value)
 
 
 def end_lottery(LINK):
     account = get_account()
     lottery = Lottery[-1]
 
-    tx = fund_with_link(
-        lottery.address,
-        amount=LINK,
-    )
+    link_token = get_contract("link_token_contract")
+    if network.show_active() in FORKED_LOCAL_ENVIRONMENTS:
+        tx = link_token.transfer(account, LINK * 3, {"from": accounts[10]})
+        tx.wait(1)
+        print("LINK send to account from: ", accounts[10])
+
+    tx = link_token.transfer(lottery.address, LINK * 1.2, {"from": account})
     tx.wait(1)
-    print("LINK added to subscription: ", round(LINK / 1000000000000000000, 2))
+    print(tx.info())
+    print(tx.events)
+    print(
+        "Contract Funded with",
+        link_token.balanceOf(lottery.address) / 1000000000000000000,
+        "LINK",
+    )
+    if network.show_active() not in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+        tx = lottery.topUpSubscription(LINK, {"from": account})
+        tx.wait(1)
+        print("LINK added to subscription: ", round(LINK / 1000000000000000000, 2))
+
     ending_transaction = lottery.endLottery({"from": account})
     ending_transaction.wait(1)
     # for waiting response of the VRF
@@ -64,9 +78,6 @@ def end_lottery(LINK):
 def cancel_sub(LINK):
     account = get_account()
     lottery = Lottery[-1]
-    print("Withdrawing....")
-    tx = lottery.withdraw(LINK, account, {"from": account})
-    tx.wait(1)
     print("Deleting subscription...")
     tx = lottery.cancelSubscription(account, {"from": account})
     tx.wait(1)
@@ -74,15 +85,10 @@ def cancel_sub(LINK):
 
 
 def main():
-    LINK = 2000000000000000000
+    LINK = 3000000000000000000
     deploy_lottery()
     start_lottery()
     enter_lottery()
-    try:
-        end_lottery(LINK)
-    except:
-        print(
-            "end of lottery could not be fulfilled, proccedding to cancel subcription"
-        )
+    end_lottery(LINK)
     if network.show_active() not in FORKED_LOCAL_ENVIRONMENTS:
         cancel_sub(LINK)

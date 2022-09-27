@@ -234,7 +234,7 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
     // override mean we are overriding the original declaration of the function
     function fulfillRandomWords(
         uint256, /* requestId */
-        uint256[] memory randomWords // not an array as numWords was fixed to 1
+        uint256[] memory randomWords // array of random numbers
     ) internal override {
         require(
             lottery_state == LOTTERY_STATE.CALCULATING_WINNER,
